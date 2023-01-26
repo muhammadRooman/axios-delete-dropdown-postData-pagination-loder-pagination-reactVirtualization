@@ -20,14 +20,22 @@ const ListQuestionnaire = () => {
   const [deleteIndex, setDeleteIndex] = useState();
   const [questionnaireList, setQuestionnaireList] = useState([]);
   const [editDetail, setEditDetail] = useState({});
+  const [questionnaireName, setquestionnaireName] = useState({});
+  const [changeNameEdit, setChangeNameEdit] = useState("");
   //edit modal state
   const [showEdit, setShowEdit] = useState(false);
 
   //PATCH / EDIT
-  const handleCloseEdit = async () => {
+  const saveChangesHandler = async (item) => {
     try {
       const res = await axios.patch(
-        `${process.env.REACT_APP_BASE_URL}/admin/questionnaire`
+        `${process.env.REACT_APP_BASE_URL}/admin/questionnaire`,{
+          id:questionnaireName._id,
+          update:{
+            name:changeNameEdit
+          }
+        }
+      
       );
       fetchData();
       setShowEdit(false);
@@ -40,6 +48,9 @@ const ListQuestionnaire = () => {
   const handleShowEdit = (item) => {
     setEditDetail(item);
     console.log("object", item);
+    setquestionnaireName(item)
+    console.log("quest",questionnaireName._id);
+   
     setShowEdit(true);
   };
   //Fetching Data Campaigns
@@ -109,26 +120,26 @@ const ListQuestionnaire = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* EDIT / PATCH MODAL */}
+      {/* EDIT / PATCH MODAL start */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Edit Questionnaire Name </Modal.Title>
         </Modal.Header>
         <div className="editModel">
           <Form.Label>Questionnaire Name</Form.Label>
-          <Form.Control type="text" placeholder={editDetail.name} />
+          <Form.Control type="text" defaultValue={editDetail.name} onChange={(e)=> setChangeNameEdit (e.target.value)} />
         </div>
 
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowEdit(false)}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleCloseEdit}>
+          <Button variant="primary" onClick={saveChangesHandler}>
             Save Changes
           </Button>
         </Modal.Footer>
       </Modal>
-
+      {/* EDIT / PATCH MODAL end */}
       <Container>
         <Breadcrumbs questionnaire={"Questionnaires"} />
         <Card className="list_campaign">
