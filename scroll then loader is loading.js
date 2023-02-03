@@ -54,31 +54,30 @@ const List = () => {
   }, []);
 
   //=== Function Get data through API  ===
-  const campaignList = () => {
-    // setLoading(true);
-    axios
-      .get(
+  const campaignList = async () => {
+    try {
+      currPage == 1 && setLoading(true);
+      const response = await axios.get(
         `${process.env.REACT_APP_BASE_URL}/admin/campaign/list?page=${currPage}`
-      )
-      .then((response) => {
-        if (!response.data.AllCampaigns.length) {
-          setWasLastList(true);
-        }
-        setPrevPage(currPage);
-        setAllCampaigns([...allCampaigns, ...response.data.AllCampaigns]);
-        console.log("Response Campaign get Data", response.data.AllCampaigns);
-        console.log("total pages", response.data.pages);
-        setLoading(false);
-        notify.show(
-          "Campaigns has been retrieved successfully",
-          "success",
-          3500
-        );
-      })
-      .catch(() => {
-        setLoading(false);
-        console.log("Something went wrong...");
-      });
+      );
+      if (!response.data.AllCampaigns) {
+        setWasLastList(true);
+        console.log("no further campaigns ", response.data.message);
+        toast.success(response.data.message);
+        return;
+      }
+      setPrevPage(currPage);
+      setAllCampaigns([...allCampaigns, ...response.data.AllCampaigns]);
+      console.log("Response Campaign get Data", response.data.AllCampaigns);
+      console.log("total pages", response.data.pages);
+      console.log("last message", response.data.message);
+      setLoading(false);
+      notify.show("Campaigns has been retrieved successfully", "success", 3500);
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      setLoading(false);
+    }
   };
 
   //== launch Campaigns
@@ -148,7 +147,7 @@ const List = () => {
         <Breadcrumbs campaign={"Campaigns"} />
         <Card className="list_campaign">
           <Card.Title as="h2">List Campaigns </Card.Title>
-         <Button
+          <Button
             className="createNewCompaigns new_create_campaign"
             onClick={() => navigate(`/admin/campaign/new`)}
           >
