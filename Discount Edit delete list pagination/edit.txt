@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import { Button, Form, Modal } from "react-bootstrap";
 import { ENV } from "../../config/config";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -8,6 +7,7 @@ import { toast } from "react-toastify";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
+import { Button, Form } from "react-bootstrap";
 import moment from "moment";
 
 const EditDiscountModal = () => {
@@ -18,16 +18,18 @@ const EditDiscountModal = () => {
     endDateError: "",
   });
 
+  // Get Method used
   const { id } = useParams();
   useEffect(() => {
     async function FetchData() {
       let url = `${ENV.url}discount/${id}`;
       const response = await axios.get(`${url}`);
-      setEditDiscount(response.data.data);
+      setEditDiscount(response?.data?.data);
     }
+
     FetchData();
   }, []);
-
+  console.log("dateeeeeeeee", editDiscount);
   // New Updated list
   var editData = {
     _id: editDiscount?._id,
@@ -37,7 +39,8 @@ const EditDiscountModal = () => {
     endDate: editDiscount?.endDate,
     value: editDiscount?.value,
   };
-  
+
+  // PUT method
   async function UpdateData() {
     try {
       const res = await axios.put(`${ENV.url}discount/${id}`, editData);
@@ -82,14 +85,8 @@ const EditDiscountModal = () => {
       isValid = false;
     }
 
-    if (!editDiscount.value) {
-      errors.valueError = "Value should not be empty (excluding 'e' or 'E')";
-      isValid = false;
-    }
-
     const currentDate = new Date();
     const startDate = new Date(editDiscount.startDate);
-
     if (startDate < currentDate) {
       errors.startDateError =
         "Start Date cannot be earlier than the current date";
@@ -100,10 +97,11 @@ const EditDiscountModal = () => {
       setFormErrors(errors);
       return;
     }
-
+    //Call updated function
     UpdateData();
   };
 
+  // Back to list page
   const BackButton = () => {
     history.push(`/discount`);
   };
@@ -122,7 +120,6 @@ const EditDiscountModal = () => {
             submitEdit(e);
           }}
         >
-          {/* <Modal.Header closeButton> */}
           <div className="new_discount_wraper">
             <div className="update_discount_screen card">
               <h5 className="card-title generic_title">Update Discount</h5>
@@ -148,31 +145,8 @@ const EditDiscountModal = () => {
                         title="At least 3 letters are required"
                         required
                       />
-                      <Form.Text className="text-muted validation ">
-                        {formErrors.nameError}
-                      </Form.Text>
                     </Form.Group>
                   </div>
-
-                  {/* <Form.Group className="mb-3">
-              <Form.Label>Discount Type</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter the Discount Type"
-                name="Nationality"
-                value={editDiscount?.discountType}
-                // disabled={true}
-                onChange={(e) => {
-                  setEditDiscount({
-                    ...editDiscount,
-                    discountType: e.target.value,
-                  });
-                }}
-              />
-              <Form.Text className="text-muted validation ">
-                {formErrors.discountTypeError}
-              </Form.Text>
-            </Form.Group> */}
                   <div className="col-lg-6">
                     <Form.Group className="mb-3">
                       <Form.Label>
@@ -183,7 +157,6 @@ const EditDiscountModal = () => {
                         type="number"
                         name="value"
                         value={editDiscount?.value}
-                        // disabled={true}
                         onChange={(e) => {
                           setEditDiscount({
                             ...editDiscount,
@@ -192,10 +165,7 @@ const EditDiscountModal = () => {
                         }}
                         min={0}
                         required
-                      />{" "}
-                      <Form.Text className="text-muted validation ">
-                        {formErrors.valueError}
-                      </Form.Text>
+                      />
                     </Form.Group>
                   </div>
                 </div>
@@ -205,25 +175,28 @@ const EditDiscountModal = () => {
                       <Form.Label>
                         Start Date<sup className="text-danger">*</sup>
                       </Form.Label>
-                      <DatePicker
-                        selected={
-                          editDiscount?.startDate
-                            ? moment(editDiscount?.startDate).toDate()
-                            : null
-                        }
-                        placeholderText="Enter the Start date"
+             <Form.Control
+                        type="date"
+                        rows={3}
+                        // autoComplete="off"
                         name="startDate"
+                        value={editDiscount?.startDate?.split("T")[0]}
                         className="form-control"
-                        onChange={(date) => {
-                          setEditDiscount({
-                            ...editDiscount,
-                            startDate: date
-                              ? moment(date).format("YYYY-MM-DD")
-                              : null,
-                          });
+                        onChange={(e) => {
+                          const selectedDate = e.target.value;
+                          const currentDate = new Date()
+                            .toISOString()
+                            .split("T")[0];
+                          if (selectedDate >= currentDate) {
+                            setEditDiscount({
+                              ...editDiscount,
+                              startDate: selectedDate,
+                            });
+                          }
                         }}
                         required
                       />
+
                       <Form.Text className="text-muted validation ">
                         {formErrors.startDateError}
                       </Form.Text>
@@ -234,22 +207,24 @@ const EditDiscountModal = () => {
                       <Form.Label>
                         End Date<sup className="text-danger">*</sup>
                       </Form.Label>
-                      <DatePicker
-                        selected={
-                          editDiscount?.endDate
-                            ? moment(editDiscount?.endDate).toDate()
-                            : null
-                        }
-                        placeholderText="Enter the End date"
-                        name="endDate"
+                     <Form.Control
+                        type="date"
+                        rows={3}
+                        // autoComplete="off"
+                        name="editDiscount"
+                        value={editDiscount?.endDate?.split("T")[0]}
                         className="form-control"
-                        onChange={(date) => {
-                          setEditDiscount({
-                            ...editDiscount,
-                            endDate: date
-                              ? moment(date).format("YYYY-MM-DD")
-                              : null,
-                          });
+                        onChange={(e) => {
+                          const selectedDate = e.target.value;
+                          const currentDate = new Date()
+                            .toISOString()
+                            .split("T")[0];
+                          if (selectedDate >= currentDate) {
+                            setEditDiscount({
+                              ...editDiscount,
+                              endDate: selectedDate,
+                            });
+                          }
                         }}
                         required
                       />
@@ -268,7 +243,6 @@ const EditDiscountModal = () => {
                     type="text"
                     className="form-control"
                     name="short_name"
-                    // disabled={true}
                     value={editDiscount?.description}
                     onChange={(e) => {
                       setEditDiscount({
